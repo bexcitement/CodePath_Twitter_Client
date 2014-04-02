@@ -72,7 +72,7 @@ public class TimelineActivity extends Activity {
 		    public void onLoadMore(int page, int totalItemsCount) {
 	                // Triggered only when new data needs to be appended to the list
 	                // Add whatever code is needed to append new items to your AdapterView
-		        customLoadMoreDataFromApi(totalItemsCount); 
+		        customLoadMoreDataFromApi(page); 
 		    }
         });
 	}
@@ -96,7 +96,8 @@ public class TimelineActivity extends Activity {
 	 }
 	 
 	 public void customLoadMoreDataFromApi(int offset) {
-			client.getHomeTimeline(1, new JsonHttpResponseHandler() {
+		 	Toast.makeText(this, "Pusheen!", Toast.LENGTH_SHORT).show();
+			client.getHomeTimeline(offset, new JsonHttpResponseHandler() {
 				@Override
 				public void onSuccess(JSONArray jsonTweets) {						
 					adapter.addAll(Tweet.fromJson(jsonTweets));
@@ -120,11 +121,14 @@ public class TimelineActivity extends Activity {
 		  if (resultCode == RESULT_OK && requestCode == SETTINGS_REQUEST) {
 		     // Extract name value from result extras
 		     newTweet = data.getExtras().getString(TWEET_EXTRA);
+		     final Tweet thisTweet = (Tweet) data.getSerializableExtra(SETTINGS_EXTRA);
+		     
 		     Toast.makeText(this, newTweet, Toast.LENGTH_SHORT).show();
 		     client.composeNewTweet(newTweet, new JsonHttpResponseHandler() {
 		    		
 		        	@Override
 		        	public void onSuccess(JSONArray json) {
+		        		adapter.insert(thisTweet, 0);
 		            	Log.d("SUCCESS", "newTweet: " + json.toString());
 		            }
 
