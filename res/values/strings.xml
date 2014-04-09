@@ -11,5 +11,7 @@
     <string name="bex">\@Bexcitement</string>
     <string name="btnSave">SAVE</string>
     <string name="newTweet">Chirp Chirp!</string>
+    <string name="helloFragment">Hello!</string>
+    <string name="title_activity_profile">ProfileActivity</string>
 
 </resources>

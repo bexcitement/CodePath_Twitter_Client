@@ -1,46 +1,74 @@
 package com.codepath.apps.restclienttemplate.models;
 
+import java.io.Serializable;
+
+import org.json.JSONException;
 import org.json.JSONObject;
 
 // Constructors User and sets the JSON object
-public class User extends BaseModel{
+public class User implements Serializable {
+	private static final long serialVersionUID = -6738659835383338886L;
+	private String name;
+	private long uid;
+	private String screenName;
+	private String profileBgImageUrl;
+	private String description;
+	private String profile_image_url;
+	private int numTweets;
+	private int followersCount;
+	private int friendsCount;
+	
+	 public String getName() {
+	        return name;
+    }
 
-	public String getName(){
-		return getString("name");
+    public long getId() {
+        return uid;
+    }
+
+    public String getScreenName() {
+        return screenName;
+    }
+
+    public String getProfileBackgroundImageUrl() {
+        return profileBgImageUrl;
+    }
+
+    public int getNumTweets() {
+        return numTweets;
+    }
+
+    public int getFollowersCount() {
+        return followersCount;
+    }
+
+    public int getFriendsCount() {
+        return friendsCount;
+    }
+    
+    public String getTagline() {
+		return description;
+	}
+    
+    public String getProfileImageUrl() {
+		return profile_image_url;
 	}
 	
-	public long getId() {
-		return getLong("id");
-	}
-	
-	public String getScreenName() {
-		return getString("screen_name");
-	}
-	
-	public String getProfileImageUrl() {
-		return getString("profile_image_url");
-	}
-	
-	public int getNumTweets() {
-		return getInt("statuses_count");
-	}
-	
-	public int getFollowersCount() {
-		return getInt("followers_count");
-	}
-	
-	public int getFriendsCount() {
-		return getInt("friends_count");
-	}
-	
-	public static User fromJson(JSONObject json) {
-		User u = new User();
-		
-		try {
-			u.jsonObject = json;
-		} catch (Exception e){
-			e.printStackTrace();	
-		}
-		return u;
-	}
+  public static User fromJson(JSONObject json) {
+        User u = new User();
+        try {
+        	u.name = json.getString("name");
+        	u.uid = json.getLong("id");
+        	u.screenName = json.getString("screen_name");
+        	u.profileBgImageUrl = json.getString("profile_background_image_url");
+        	u.profile_image_url = json.getString("profile_image_url");
+        	u.numTweets = json.getInt("statuses_count");
+        	u.followersCount = json.getInt("followers_count");
+        	u.friendsCount = json.getInt("friends_count");
+        	u.description = json.getString("description");
+        } catch (JSONException e) {
+            e.printStackTrace();
+        }
+        return u;
+    }
 }

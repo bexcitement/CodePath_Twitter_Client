@@ -51,6 +51,13 @@
             android:name="com.codepath.apps.twitterapp_rbruggman.ComposeTweet"
             android:label="@string/title_activity_compose_tweet" >
         </activity>
+        <activity
+            android:name="com.codepath.apps.twitterapp_rbruggman.ProfileActivity"
+            android:label="@string/title_activity_profile" >
+        </activity>
+        <activity
+            android:name="com.codepath.apps.twitterapp_rbruggman.OtherProfilesActivity" >
+        </activity>
     </application>
 
 </manifest>

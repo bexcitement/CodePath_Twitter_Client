@@ -1,30 +1,36 @@
 package com.codepath.apps.twitterapp_rbruggman;
 
-import java.util.ArrayList;
-
 import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
 
-import android.app.Activity;
+import android.app.ActionBar;
+import android.app.ActionBar.Tab;
+import android.app.ActionBar.TabListener;
+import android.app.FragmentTransaction;
 import android.content.Intent;
 import android.os.Bundle;
+import android.support.v4.app.FragmentActivity;
+import android.support.v4.app.FragmentManager;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ListView;
 import android.widget.Toast;
-import android.widget.AbsListView.OnScrollListener;
+import android.widget.AdapterView.OnItemClickListener;
 
 import com.codepath.apps.restclienttemplate.models.Tweet;
-import com.loopj.android.http.AsyncHttpClient;
-import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.codepath.apps.twitterapp_rbruggman.fragments.HomeTimelineFragment;
+import com.codepath.apps.twitterapp_rbruggman.fragments.MentionsFragment;
+import com.codepath.apps.twitterapp_rbruggman.fragments.TweetsListFragment;
 import com.loopj.android.http.JsonHttpResponseHandler;
 
 import eu.erikw.PullToRefreshListView;
-import eu.erikw.PullToRefreshListView.OnRefreshListener;
 
-public class TimelineActivity extends Activity {
-	PullToRefreshListView lvTweets;
+// Every activity that is going to have fragments embedded 
+public class TimelineActivity extends FragmentActivity implements TabListener {
+//	PullToRefreshListView lvTweets;
+	ListView lvTweets;
 	TwitterClient client;
 	public static final String SETTINGS_EXTRA = "settings";
 	public static final int SETTINGS_REQUEST = 123;
@@ -32,80 +38,34 @@ public class TimelineActivity extends Activity {
 	Settings settings;
 	TweetsAdapter adapter;
 	String newTweet;
+	TweetsListFragment fragmentTweets;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.activity_timeline);
+		setupNavigationTabs();
+		// gives us access to our fragment
+		// always need to use the getsupportfrgamentmanager when accessing a fragment
+//		fragmentTweets = (TweetsListFragment) getSupportFragmentManager().findFragmentById(R.id.fragmentTweets);
+		
 		settings = new Settings();
-		lvTweets = (PullToRefreshListView) findViewById(R.id.lvTweets);
+//		lvTweets = (PullToRefreshListView) findViewById(R.id.lvTweets);
+		lvTweets = (ListView) findViewById(R.id.lvTweets);
 		client = (TwitterClient) TwitterClient.getInstance(TwitterClient.class, this);
-		
-		// Set a listener to be invoked when the list should be refreshed.
-        lvTweets.setOnRefreshListener(new OnRefreshListener() {
-            @Override
-            public void onRefresh() {
-                // Your code to refresh the list contents
-                // Make sure you call listView.onRefreshComplete()
-                // once the loading is done. This can be done from here or any
-                // place such as when the network request has completed successfully.
-            	Log.d("REFRESH", "refresh");
-                fetchTimelineAsync(0);
-            }
-        });
-		//Twiiter_Client_rbruggman_App.getRestClient()
-		client.getHomeTimeline(0, new JsonHttpResponseHandler() {
-			@Override
-			// work with arraylist of tweets!
-			public void onSuccess(JSONArray jsonTweets) {
-				ArrayList<Tweet> tweets = Tweet.fromJson(jsonTweets);
-				PullToRefreshListView lvTweets = (PullToRefreshListView) findViewById(R.id.lvTweets);
-//				 cant use this because it refers to the inner class
-				adapter = new TweetsAdapter(getBaseContext(), tweets);
-				lvTweets.setAdapter(adapter);
-				Log.d("DEBUG", jsonTweets.toString());
-			}
-		});
-		
-		lvTweets.setOnScrollListener(new EndlessScrollListener() {
-		    @Override
-		    public void onLoadMore(int page, int totalItemsCount) {
-	                // Triggered only when new data needs to be appended to the list
-	                // Add whatever code is needed to append new items to your AdapterView
-		        customLoadMoreDataFromApi(page); 
-		    }
-        });
 	}
 	
-	 public void fetchTimelineAsync(int page) {
-		 client.getHomeTimeline(0, new JsonHttpResponseHandler() {
-        	
-        	@Override
-        	public void onSuccess(JSONArray json) {
-        		adapter.clear();
-                adapter.addAll(Tweet.fromJson(json));
-            	Log.d("SUCCESS", "timeline: " + json.toString());
-                lvTweets.onRefreshComplete();
-            }
-
-            public void onFailure(Throwable e, JSONArray json) {
-            	Log.d("fail", "Fetch timeline error: " + e.toString());
-                Log.d("#failwhale", "Fetch timeline error json: " + json.toString());
-            }
-        });
-	 }
-	 
-	 public void customLoadMoreDataFromApi(int offset) {
-		 	Toast.makeText(this, "Pusheen!", Toast.LENGTH_SHORT).show();
-			client.getHomeTimeline(offset, new JsonHttpResponseHandler() {
-				@Override
-				public void onSuccess(JSONArray jsonTweets) {						
-					adapter.addAll(Tweet.fromJson(jsonTweets));
-					Log.d("DEBUG", jsonTweets.toString());
-				}
-			});
-
-		}
+	 private void setupNavigationTabs() {
+		ActionBar actionBar = getActionBar();
+		actionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
+		actionBar.setDisplayShowTitleEnabled(true);
+		Tab tabHome = actionBar.newTab().setText("Home").setTag("HomeTimeLineFragment").setIcon(R.drawable.ic_home).setTabListener(this);
+		Tab tabMentions = actionBar.newTab().setText("Mentions").setTag("MentionsTimeLineFragment").setIcon(R.drawable.ic_mentions).setTabListener(this);
+		
+		actionBar.addTab(tabHome);
+		actionBar.addTab(tabMentions);
+		actionBar.selectTab(tabHome);
+	}
 	 
 	 public void onPenPress(MenuItem item) {
 		Toast.makeText(this, "Go Warrior!", Toast.LENGTH_SHORT).show();
@@ -114,7 +74,12 @@ public class TimelineActivity extends Activity {
 		i.putExtra(SETTINGS_EXTRA, settings);
 		startActivityForResult(i, SETTINGS_REQUEST);
 	}
-	
+	 
+	 public void onProfileView(MenuItem mi) {
+			Intent i = new Intent(this, ProfileActivity.class);
+			startActivity(i);
+	} 
+	 
 	 @Override
 		protected void onActivityResult(int requestCode, int resultCode, Intent data) {
 		  // REQUEST_CODE is defined above
@@ -147,6 +112,37 @@ public class TimelineActivity extends Activity {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.timeline, menu);
 		return true;
+	}
+
+	@Override
+	public void onTabReselected(Tab tab, FragmentTransaction ft) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public void onTabSelected(Tab tab, FragmentTransaction ft) {
+		FragmentManager manager = getSupportFragmentManager();
+		// sets up the transaction to be able to make changes to the fragments on screen
+		android.support.v4.app.FragmentTransaction fts = manager.beginTransaction();
+		if(tab.getTag() == "HomeTimeLineFragment") {
+			// setting the fragment to home timeline
+			// give replace an ID and a fragment
+			// it will take care of creating teh fragment for you and putting it into frame layout
+			fts.replace(R.id.frameContainer, new HomeTimelineFragment());
+		} else {
+			// setting the fragment to the mentions timeline
+			fts.replace(R.id.frameContainer, new MentionsFragment());
+		}
+		// actually makes the changes you have described
+		fts.commit();
+		
+	}
+
+	@Override
+	public void onTabUnselected(Tab tab, FragmentTransaction ft) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

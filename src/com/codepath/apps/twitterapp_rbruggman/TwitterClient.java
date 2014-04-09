@@ -1,13 +1,15 @@
 package com.codepath.apps.twitterapp_rbruggman;
 
 import org.scribe.builder.api.Api;
-import org.scribe.builder.api.FlickrApi;
+//import org.scribe.builder.api.FlickrApi;
 import org.scribe.builder.api.TwitterApi;
 
 import android.content.Context;
 
+import com.codepath.apps.restclienttemplate.models.User;
 import com.codepath.oauth.OAuthBaseClient;
 import com.loopj.android.http.AsyncHttpResponseHandler;
+import com.loopj.android.http.JsonHttpResponseHandler;
 import com.loopj.android.http.RequestParams;
 
 /*
@@ -49,6 +51,21 @@ public class TwitterClient extends OAuthBaseClient {
     	client.post(url, params, handler);
     }
     
+    public void getMentions(AsyncHttpResponseHandler handler) {
+    	String url = getApiUrl("statuses/mentions_timeline.json");
+    	client.get(url, null, handler);
+    }
+    
+    public void getMyInfo(AsyncHttpResponseHandler handler) {
+    	String url = getApiUrl("account/verify_credentials.json");
+    	client.get(url, null, handler);
+    }
+    
+    public void getUserTimeline(AsyncHttpResponseHandler handler) {
+    	String url = getApiUrl("statuses/user_timeline.json");
+    	client.get(url, null, handler);
+    }
+    
     // alternative pull to refresh
     public void getHomeTimelineSince(int sinceId, AsyncHttpResponseHandler handler) {
         String url = getApiUrl("statuses/home_timeline.json");
@@ -57,6 +74,15 @@ public class TwitterClient extends OAuthBaseClient {
         client.get(url, params, handler);
         // can also do client post or delete if needed
     } 
+    
+    public void getUserTimeline(AsyncHttpResponseHandler handler, String tweetID) {
+    	String url = getApiUrl("statuses/user_timeline.json");
+    	RequestParams params = new RequestParams();
+    	params.put("screen_name", String.valueOf(tweetID));
+    	client.get(url, params, handler);
+    }
+    
+
     
     /* 1. Define the endpoint URL with getApiUrl and pass a relative path to the endpoint
      * 	  i.e getApiUrl("statuses/home_timeline.json");
